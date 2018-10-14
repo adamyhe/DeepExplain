@@ -269,7 +269,7 @@ class DeepLIFTRescale(GradientBasedMethod):
         self.baseline = baseline
 
     def get_symbolic_attribution(self):
-        return [g * (x - b) for g, x, b in zip(
+        return [g for g, x, b in zip(
             tf.gradients(self.T, self.X),
             self.X if self.has_multiple_inputs else [self.X],
             self.baseline if self.has_multiple_inputs else [self.baseline])]
