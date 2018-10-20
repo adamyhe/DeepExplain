@@ -187,7 +187,7 @@ https://arxiv.org/pdf/1704.02685.pdf - https://arxiv.org/abs/1611.07270
 class GradientXInput(GradientBasedMethod):
 
     def get_symbolic_attribution(self):
-        return [g * x for g, x in zip(
+        return [g for g, x in zip(
             tf.gradients(self.T, self.X),
             self.X if self.has_multiple_inputs else [self.X])]
 
