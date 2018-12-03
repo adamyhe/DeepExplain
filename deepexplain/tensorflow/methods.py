@@ -474,9 +474,12 @@ class DeepExplain(object):
 
         _ENABLED_METHOD_CLASS = method_class
         method = _ENABLED_METHOD_CLASS(T, X, xs, self.session, self.keras_phase_placeholder, **kwargs)
-        #result = method.run()
+        
+        method._set_check_baseline()
+        method._init_references()
         sym_attribs = method.get_symbolic_attribution()
-        #func = self.compile_func([X], sym_attribs)
+        func = self.compile_func([X], sym_attribs)
+
         if issubclass(_ENABLED_METHOD_CLASS, GradientBasedMethod) and _GRAD_OVERRIDE_CHECKFLAG == 0:
             warnings.warn('DeepExplain detected you are trying to use an attribution method that requires '
                           'gradient override but the original gradient was used instead. You might have forgot to '
@@ -485,7 +488,6 @@ class DeepExplain(object):
         _GRAD_OVERRIDE_CHECKFLAG = 0
         self.keras_phase_placeholder = None
 
-        func = self.compile_func([X], sym_attribs)
         return func
 
     @staticmethod
