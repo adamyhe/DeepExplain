@@ -413,7 +413,41 @@ def deepexplain_grad(op, grad):
     else:
         return original_grad(op, grad)
 
+def get_session():
+    try:
+        #use the keras session if there is one
+        import keras.backend as K
+        return K.get_session()
+    except:
+        #Warning: I haven't really tested this behaviour out...
+        global _SESS 
+        if _SESS is None:
+            print("MAKING A SESSION")
+            _SESS = tf.Session()
+            _SESS.run(tf.global_variables_initializer()) 
+        return _SESS
 
+
+def compile_func(inputs, outputs):
+    if (isinstance(inputs, list)==False):
+        print("Wrapping the inputs in a list...")
+        inputs = [inputs]
+    assert isinstance(inputs, list)
+    def func_to_return(inp):
+        if len(inp) > len(inputs) and len(inputs)==1:
+            print("Wrapping the inputs in a list...")
+            inp = [inp]
+        assert len(inp)==len(inputs),\
+            ("length of provided list should be "
+             +str(len(inputs))+" for tensors "+str(inputs)
+             +" but got input of length "+str(len(inp)))
+        feed_dict = {}
+        for input_tensor, input_val in zip(inputs, inp):
+            feed_dict[input_tensor] = input_val 
+        sess = get_session()
+        return sess.run(outputs, feed_dict=feed_dict)  
+    return func_to_return
+    
 class DeepExplain(object):
 
     def __init__(self, graph=None, session=tf.get_default_session()):
@@ -455,7 +489,6 @@ class DeepExplain(object):
 
         _ENABLED_METHOD_CLASS = method_class
         method = _ENABLED_METHOD_CLASS(T, X, xs, self.session, self.keras_phase_placeholder, **kwargs)
-        result = method.run()
         if issubclass(_ENABLED_METHOD_CLASS, GradientBasedMethod) and _GRAD_OVERRIDE_CHECKFLAG == 0:
             warnings.warn('DeepExplain detected you are trying to use an attribution method that requires '
                           'gradient override but the original gradient was used instead. You might have forgot to '
@@ -463,7 +496,10 @@ class DeepExplain(object):
         _ENABLED_METHOD_CLASS = None
         _GRAD_OVERRIDE_CHECKFLAG = 0
         self.keras_phase_placeholder = None
-        return result
+        
+        sym_attribs = method.get_symbolic_attribution()
+        func = compile_func([X], sym_attribs)
+        return func
 
     @staticmethod
     def get_override_map():
