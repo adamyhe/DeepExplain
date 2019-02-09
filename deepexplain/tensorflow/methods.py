@@ -434,6 +434,12 @@ class DeepExplain(object):
             print("Wrapping the inputs in a list...")
             inputs = [inputs]
         assert isinstance(inputs, list)
+        
+        # remove possible None outputs
+        # This happens in the case where the inputs don't
+        # depdend on the output (e.g. interpreted tensor) at all
+        outputs = [o for o in outputs if o is not None]
+        
         def func_to_return(inp):
             if len(inp) > len(inputs) and len(inputs)==1:
                 print("Wrapping the inputs in a list...")
