@@ -480,7 +480,10 @@ class DeepExplain(object):
         method._set_check_baseline()
         method._init_references()
         sym_attribs = method.get_symbolic_attribution()
-        func = self.compile_func([X], sym_attribs)
+        
+        if not isinstance(X, list):
+            X = [X]
+        func = self.compile_func(X, sym_attribs)
 
         if issubclass(_ENABLED_METHOD_CLASS, GradientBasedMethod) and _GRAD_OVERRIDE_CHECKFLAG == 0:
             warnings.warn('DeepExplain detected you are trying to use an attribution method that requires '
