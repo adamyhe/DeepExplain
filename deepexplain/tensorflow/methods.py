@@ -301,7 +301,7 @@ class DeepLIFTRescale(GradientBasedMethod):
         sys.stdout.flush()
         self._deeplift_ref.clear()
         ops = []
-        g = tf.get_default_graph()
+        g = tf.compat.v1.get_default_graph()
         for op in g.get_operations():
             if len(op.inputs) > 0 and not op.name.startswith('gradients'):
                 if op.type in SUPPORTED_ACTIVATIONS:
@@ -417,7 +417,7 @@ def deepexplain_grad(op, grad):
     
 class DeepExplain(object):
 
-    def __init__(self, graph=None, session=tf.get_default_session()):
+    def __init__(self, graph=None, session=tf.compat.v1.get_default_session()):
         self.method = None
         self.batch_size = None
         self.session = session
@@ -513,7 +513,7 @@ class DeepExplain(object):
          and needs to be passed in feed_dict.
         :return:
         """
-        g = tf.get_default_graph()
+        g = tf.compat.v1.get_default_graph()
         for op in g.get_operations():
             if len(op.inputs) > 0 and not op.name.startswith('gradients'):
                 if op.type in UNSUPPORTED_ACTIVATIONS:
